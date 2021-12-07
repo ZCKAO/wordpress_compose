@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    ports:
+      - "80:80"
+    volumes:
+      # we save our directory of keys on our host server                                            
+      - /etc/letsencrypt:/etc/letsencrypt
+    # this command will generate the certificate.                                                   
+    # make sure to change your -d and --email flags                                                 
+    command: certonly --standalone  --email youremail@email.com --agree-tos --no-eff-email --force-renewal -d ubestream.cf -d ubestream.cf
