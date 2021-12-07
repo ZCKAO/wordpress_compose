@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  # phpmyadmin
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '8081:80'
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: password
+
+  # Database
+  db:
+    image: mariadb:10.5.8
+    volumes: ["./db_data:/var/lib/mysql"]
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+
+  # Wordpress
+  wordpress:
+    image: wordpress:5-fpm-alpine
+    depends_on:
+      - db
+    container_name: wordpress
+    restart: always
+    volumes:
+      - wordpress:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+
+  nginx_server:
+    depends_on:
+      - wordpress
+    image: nginx:1.15.12-alpine
+    container_name: nginx_server
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - wordpress:/var/www/html
+      - ./nginx-conf-http/:/etc/nginx/conf.d
+      - ./wordpress.ini:/usr/local/etc/php/conf.d/wordpress.ini
+
+networks:
+  wpsite:
+
+volumes:
+  wordpress:
